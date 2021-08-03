@@ -1,0 +1,3 @@
+container_name: myos
+image_name: upmanyu1/centos_ssh:v1
+apache: httpd

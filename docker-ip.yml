@@ -1,0 +1,47 @@
+- hosts: localhost
+  vars_files: 
+   - docker_info.txt
+
+  tasks:
+  - name: Setting up Docker yum conf 
+    yum_repository:
+     name: dockername
+     description: repo for docker 
+     file: docker
+     baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+     gpgcheck: no
+  - command: "yum install docker-ce --nobest -y" 
+  - name: Start and Enable Docker Service 
+    service:
+       name: docker
+       state: started
+       enabled: yes  
+  - name: Installing docker-py pip
+    pip :
+       name: docker-py
+  - name: Pull ssh enabled image from docker hub
+    community.general.docker_image:
+       name: "{{ image_name }}"
+       source: pull
+  
+  - name: Launch a data container 
+    docker_container:
+      name: "{{ container_name }}"
+      image: "{{ image_name }}"
+      interactive: yes
+      detach: yes
+      state: started
+  - name: Getting info of Docker
+    docker_container_info:
+      name: "{{ container_name }}"
+    register: res
+  - name : Printing info
+    debug:
+      msg: "{{ res.container.NetworkSettings.IPAddress }}"
+
+  - name: Updating the inventory file 
+    blockinfile:
+      path: /root/ip.txt
+      block: |
+        {{ res.container.NetworkSettings.IPAddress }} ansible_user=root ansible_password=redhat ansible_connection=ssh
+     

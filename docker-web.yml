@@ -1,0 +1,17 @@
+- hosts: all
+  vars_files:
+     - docker_info.txt 
+  tasks:
+  
+  - name: Installing Apache  
+    package:
+       name: "{{ apache }}"
+       state: present
+     
+  - name: Start the webserver
+    command: "/usr/sbin/httpd"       
+  - name: copy the html file
+    copy:
+       src: web.html
+       dest: /var/www/html/up12.html
+
